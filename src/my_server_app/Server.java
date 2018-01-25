@@ -40,19 +40,47 @@ public class Server extends Thread {
                  /*Here the program flow stop until a client is accepted*/
                  Socket client_listener = this.listener_server.accept();
                  
+                 /*From here the program flow continues*/
                  System.out.println("The client is connected to :" + client_listener.getRemoteSocketAddress());
+                 /*Getting the IO from Server socket*/
                  this.input_socket = new BufferedReader(new InputStreamReader(client_listener.getInputStream()));
-                 this.output_socket = new PrintWriter(client_listener.getOutputStream());
-                 
+                 this.output_socket = new PrintWriter(client_listener.getOutputStream(), true);
+                 /*Starting a new Thread for a new Client*/
                  new Read(this.input_socket, this.output_socket).start();
                  
             }
             catch(Exception e){
                 System.err.println("Error in server!!!! " + e.getMessage());
             }
-        }       
-        
-        
+        }                       
     }
     
+    /*###############################<INNER CLASS>############################*/
+    
+    public class Read extends Thread {
+        String client_name;
+        String password;
+        BufferedReader client_input;
+        PrintWriter client_out;
+    
+        Read(BufferedReader incoming_inp, PrintWriter incoming_out) {
+                this.client_input = incoming_inp;
+                this.client_out = incoming_out;
+            }
+
+        public void run() {           
+            try {
+                this.client_name = this.client_input.readLine();//Getting the user Name that comes from Client
+                this.password = this.client_input.readLine(); //Getting the user password that comes from client.
+                /*Sending a confirmation message*/
+                this.client_out.println("added");
+                printWriter_list_clients.add(client_out);//Adding the output_stream of this client SOCKET.
+                name_list_clients.add(client_name); //Adding the client name recenlty added.
+                System.out.println(client_name + " added");
+            }
+            catch(Exception e) {
+                System.err.println("ERRORR!!!!" + e.getMessage());
+            }
+        }
+    }    
 }
