@@ -55,6 +55,11 @@ public class Server extends Thread {
         }                       
     }
     
+    
+    
+    public void broadcast(String message, PrintWriter  out) {
+        
+    } 
     /*###############################<INNER CLASS>############################*/
     
     public class Read extends Thread {
@@ -76,7 +81,8 @@ public class Server extends Thread {
                 this.client_out.println("added");
                 printWriter_list_clients.add(client_out);//Adding the output_stream of this client SOCKET.
                 name_list_clients.add(client_name); //Adding the client name recenlty added.
-                System.out.println(client_name + " added");
+                System.out.println(client_name + " joined");//Printing in terminal 
+                /*Sending the list of clients to this client*/
             }
             catch(Exception e) {
                 System.err.println("ERRORR!!!!" + e.getMessage());
