@@ -56,10 +56,35 @@ public class Server extends Thread {
     }
     
     
+    public void send_message(String from_user, String message, String recipient_user, PrintWriter client_out) {
+        if(recipient_user.substring(1).compareTo("All") != 0) {
+            int index_user_recipient = this.name_list_clients.indexOf(recipient_user.substring(1));
+            this.printWriter_list_clients.get(index_user_recipient).println(from_user + ":" + message);
+        }
+        else { 
+            for(PrintWriter pr_writter_At : this.printWriter_list_clients) {
+                if(pr_writter_At != client_out)
+                    pr_writter_At.println(from_user + ":" + message);
+            }
+        }
+    }
     
-    public void broadcast(String message, PrintWriter  out) {
-        
+    
+    public void broadcast_names() {                
+        for(PrintWriter pr_wr_client : this.printWriter_list_clients) {         
+           for(String name_client : this.name_list_clients) {
+               pr_wr_client.println("$"+ name_client);               
+           }
+        }
     } 
+    
+    
+    public void broadcast_kick_outname(String kick_out_name, PrintWriter pr_writter_client_kicked) {
+        for(PrintWriter pr_wr : this.printWriter_list_clients) {
+            if(pr_wr != pr_writter_client_kicked)
+                pr_wr.println("%" + kick_out_name);
+        }
+    }
     /*###############################<INNER CLASS>############################*/
     
     public class Read extends Thread {
@@ -75,17 +100,48 @@ public class Server extends Thread {
 
         public void run() {           
             try {
-                this.client_name = this.client_input.readLine();//Getting the user Name that comes from Client
-                this.password = this.client_input.readLine(); //Getting the user password that comes from client.
-                /*Sending a confirmation message*/
-                this.client_out.println("added");
-                printWriter_list_clients.add(client_out);//Adding the output_stream of this client SOCKET.
-                name_list_clients.add(client_name); //Adding the client name recenlty added.
-                System.out.println(client_name + " joined");//Printing in terminal 
-                /*Sending the list of clients to this client*/
+                    
+                String message; 
+                
+                this.client_name = this.client_input.readLine();      //Getting the user Name that comes from Client
+                this.password = this.client_input.readLine();        //Getting the user password that comes from client.                
+                this.client_out.println("added");                   //Sending a confirmation message
+                printWriter_list_clients.add(client_out);          //Adding the output_stream of this client SOCKET.
+                name_list_clients.add(client_name);               //Adding the client name recenlty added.                
+                broadcast_names();                               //Sending the list of clients to this client
+                System.out.println(client_name + " joined");    //Printing in terminal 
+                
+                /*--------------------------------------------------------------------------------------------------------------*/
+                //Starting with the main loop for read and send messages*/         
+                /*--------------------------------------------------------------------------------------------------------------*/
+                message = this.client_input.readLine();
+                
+                String[] message_splitted = message.split(":");
+                
+                while(true) {                    
+                    if (message.indexOf("~<N!_/_!D>~") != -1 && message.indexOf(" left") != -1 && message.indexOf(":") == -1) //If the string contains this then we can say that the client is offline.
+                            break;     
+                    send_message(message_splitted[0], message_splitted[1], message_splitted[2], this.client_out);   
+                    message = this.client_input.readLine();
+                    if(message.contains(":")) {
+                        message_splitted = message.split(":");                    
+                        System.out.println("Sending message from" + message_splitted[0] +  "To :" + message_splitted[2]);
+                    }
+                }                              
+                /*--------------------------------------------------------------------------------------------------------------*/
+                //End loop recieve and send messages
+                /*--------------------------------------------------------------------------------------------------------------*/
+                System.out.println(this.client_name + "left.. :("); 
+                
+                int get_kicked_index = name_list_clients.indexOf(this.client_name);
+                
+                name_list_clients.remove(get_kicked_index);
+                printWriter_list_clients.remove(get_kicked_index);
+                broadcast_names();
             }
             catch(Exception e) {
                 System.err.println("ERRORR!!!!" + e.getMessage());
+              
             }
         }
     }    
