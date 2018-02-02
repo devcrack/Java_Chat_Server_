@@ -57,8 +57,8 @@ public class Server extends Thread {
     
     
     public void send_message(String from_user, String message, String recipient_user, PrintWriter client_out) {
-        if(recipient_user.substring(1).compareTo("All") != 0) {
-            int index_user_recipient = this.name_list_clients.indexOf(recipient_user.substring(1));
+        if(recipient_user.compareTo("$All") != 0) {
+            int index_user_recipient = this.name_list_clients.indexOf(recipient_user);
             this.printWriter_list_clients.get(index_user_recipient).println(from_user + ":" + message);
         }
         else { 
@@ -76,9 +76,13 @@ public class Server extends Thread {
                pr_wr_client.println("$"+ name_client);               
            }
         }
-    } 
+    }
+        
     
-    
+    /**
+     * @param kick_out_name name of the user that has be kicked out from the server
+     * @param pr_writter_client_kicked printwriter of the user that has be kicked out from the server.
+     */
     public void broadcast_kick_outname(String kick_out_name, PrintWriter pr_writter_client_kicked) {
         for(PrintWriter pr_wr : this.printWriter_list_clients) {
             if(pr_wr != pr_writter_client_kicked)
@@ -131,13 +135,14 @@ public class Server extends Thread {
                 /*--------------------------------------------------------------------------------------------------------------*/
                 //End loop recieve and send messages
                 /*--------------------------------------------------------------------------------------------------------------*/
+
                 System.out.println(this.client_name + "left.. :("); 
+                broadcast_kick_outname(client_name, client_out);
                 
                 int get_kicked_index = name_list_clients.indexOf(this.client_name);
                 
                 name_list_clients.remove(get_kicked_index);
-                printWriter_list_clients.remove(get_kicked_index);
-                broadcast_names();
+                printWriter_list_clients.remove(get_kicked_index);                
             }
             catch(Exception e) {
                 System.err.println("ERRORR!!!!" + e.getMessage());
